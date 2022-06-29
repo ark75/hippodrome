@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,13 +28,13 @@ class HippodromeTest {
     @Test
     void exception_OnBlankList_Test() {
         assertThrows(IllegalArgumentException.class,
-                () -> new Hippodrome(List.of()));
+                () -> new Hippodrome(new ArrayList<>()));
     }
 
     @Test
     void messageOfException_OnBlankList_Test() {
         try {
-            new Hippodrome(List.of());
+            new Hippodrome(new ArrayList<>());
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("Horses cannot be empty."));
         }
@@ -41,23 +42,25 @@ class HippodromeTest {
 
     @Test
     void getHorses_SameOrder_Test() {
-        List<Horse> horses =
-                IntStream.range(1, 31)
-                        .mapToObj(horse -> Mockito.spy(new Horse(String.valueOf(horse), horse)))
-                        .collect(Collectors.toList());
-
-        assertArrayEquals(horses.toArray(new Horse[0]), new Hippodrome(horses).getHorses().toArray(new Horse[0]));
+        List<Horse> horses = new ArrayList<>();
+        for (int i = 1; i < 31; i++) {
+            horses.add(new Horse("Лошадь" + i, i, i));
+        }
+        Hippodrome hippodrome = new Hippodrome(horses);
+        assertEquals(horses, hippodrome.getHorses());
     }
 
 
     @Test
     void moveAllHorsesCheckTest() {
-        List<Horse> horses =
-                IntStream.range(1, 51)
-                        .mapToObj(horse -> Mockito.mock(Horse.class))
-                        .collect(Collectors.toList());
-        Hippodrome hippodrome = Mockito.spy(new Hippodrome(horses));
+        List<Horse> horses = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            horses.add(Mockito.mock(Horse.class));
+        }
+
+        Hippodrome hippodrome = new Hippodrome(horses);
         hippodrome.move();
+
         for (Horse horse : horses) {
             Mockito.verify(horse).move();
         }
@@ -65,14 +68,12 @@ class HippodromeTest {
 
     @Test
     void getWinner() {
-        List<Horse> horses =
-                IntStream.range(1, 51)
-                        .mapToObj(horse -> Mockito.spy(new Horse(String.valueOf(horse), horse)))
-                        .collect(Collectors.toList());
+        List<Horse> horses = new ArrayList<>();
+        for (int i = 1; i < 31; i++) {
+            horses.add(new Horse("Лошадь" + i, i, i));
+        }
 
-        Hippodrome hippodrome = Mockito.spy(new Hippodrome(horses));
-        hippodrome.move();
-        Horse winner = horses.stream().max(Comparator.comparing(Horse::getDistance)).get();
-        assertEquals(winner, hippodrome.getWinner());
+        Hippodrome hippodrome = new Hippodrome(horses);
+        assertSame(horses.get(29), hippodrome.getWinner());
     }
 }
